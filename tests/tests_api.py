@@ -1,8 +1,10 @@
 import unittest
 import json
+from main.models import Book
+from main.api import books
 from main.app import create_app
 
-class BooksTestCase(unittest.TestCase):
+class BooksPostTestCase(unittest.TestCase):
     def setUp(self):
         self.app = create_app('testing')
 
@@ -96,4 +98,44 @@ class BooksTestCase(unittest.TestCase):
         api_response = json.loads(data)
         self.assertEqual({"message":"error, book is already in the library"}, api_response)
 
+class BooksGetTestCase(unittest.TestCase):
+    def setUp(self):
+        self.app = create_app('testing')
 
+        self.app_context = self.app.app_context() #create environment to handle our request
+        self.app_context.push()
+        self.postman = self.app.test_client() #used to send request to app(GET,POST,PUT,DELETE)
+    
+    def tearDown(self):
+        self.app_context.pop()
+        books.clear()
+   
+
+    def test_zero_bookId(self):
+        response = self.postman.get("/api/v1/books/0")
+        self.assertEqual(400, response.status_code)
+
+        data = response.get_data()
+        api_response = json.loads(data)
+        self.assertEqual({"message":"error, book id cannot be zero"}, api_response)
+
+    def test_bookId_get_book(self):
+        book = Book("Fire","Anto", 2)
+        books["fire"] = book
+
+        response = self.postman.get("/api/v1/books/2")
+        self.assertEqual(200, response.status_code)
+
+        data = response.get_data()
+        api_response = json.loads(data)
+        self.assertEqual({"selection":{
+                                        "title":"Fire","author":"Anto","id":2}, 
+                                        "message":"successfuly got book requested"}, 
+                                        api_response)
+
+    def test_empty_bookId_input(self):
+        user_data = None
+        response = self.postman.get("/api/v1/books/")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual({"message":"here are all the books stocked"}, response)
+        

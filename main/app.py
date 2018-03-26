@@ -21,12 +21,14 @@ def create_app(config_name):
     else:
         return "error"
 
-    # extend flask to handle resp api
+    # extend flask to handle response api
     api = Api(app)
 
     #add url resources
-    api.add_resource(Books, "/api/v1/books")
-
+    api.add_resource(Books, 
+            "/api/v1/books",
+            "/api/v1/books/<int:bookId>")
+     
     # add error handling
     @app.errorhandler(404)
     def not_found(e):
@@ -39,4 +41,3 @@ def create_app(config_name):
         return response, 500
 
     return app
-
