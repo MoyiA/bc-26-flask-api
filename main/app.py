@@ -1,10 +1,9 @@
 from flask import Flask
 from flask_restful import Api
-
+from flask import make_response, jsonify
 
 from main.config import DevelopmentConfig, TestingConfig, ProductionConfig, StagingConfig
-
-
+from main.api import Books
 
 def create_app(config_name):
     # intialize app
@@ -22,12 +21,22 @@ def create_app(config_name):
     else:
         return "error"
 
-    # extend flask
+    # extend flask to handle resp api
     api = Api(app)
 
+    #add url resources
+    api.add_resource(Books, "/api/v1/books")
+
     # add error handling
+    @app.errorhandler(404)
+    def not_found(e):
+        response = jsonify({"message":"error, resource not found"})
+        return response, 404
+
+    @app.errorhandler(500)
+    def internal_server_error(e):
+        response = jsonify({"message":"error, internal server error"})
+        return response, 500
 
     return app
-
-
 
