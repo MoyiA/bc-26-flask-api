@@ -44,7 +44,21 @@ class Books(Resource):
 
         return {"data" : response, "message": "new book successfully created"}, 201
     
-    def get(self,bookId = None):       
+    def get(self,bookId = None):
+        if bookId == None:
+            result = []
+            for book in books.values():
+                response = {}
+                response["id"] = book.id
+                response["title"] = book.title
+                response["author"] = book.author 
+
+                result.append(response)
+            return {"data":result, "message":"here are all books stocked"}, 200
+
+        if bookId <= 0:
+            return {"message":"error, book id cannot be zero"}, 400
+
         for book in books.values():
             if book.id == bookId:
                 response = {}

@@ -130,8 +130,22 @@ class BooksGetTestCase(unittest.TestCase):
         self.assertEqual({"data":{"title":"Fire","author":"Anto","id":2}, 
                                 "message":"successfuly got book requested"
                                 }, 
-                                api_response)
+                                api_response)    
 
+    def test_empty_bookId_input(self):
+        book = Book("Fire","Anto", 2)
+        books[book.title] = book
+        book = Book("Song","Tony", 3)
+        books[book.title] = book
+
+        response = self.postman.get("/api/v1/books")
+        self.assertEqual(200, response.status_code)
+        data = response.get_data()
+        api_response = json.loads(data)
+        self.assertEqual({"data":[{"title":"Fire","author":"Anto","id":2},
+                                {"title":"Song","author":"Tony","id":3}],
+                                "message":"here are all books stocked"}, 
+                                api_response)
 
 class BooksPutTestCase(unittest.TestCase):
     def setUp(self):
