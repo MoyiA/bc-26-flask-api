@@ -120,26 +120,20 @@ class BooksGetTestCase(unittest.TestCase):
 
     def test_bookId_get_book(self):
         book = Book("Fire","Anto", 2)
-        books["fire"] = book
+        books[book.title] = book
 
         response = self.postman.get("/api/v1/books/2")
         self.assertEqual(200, response.status_code)
 
         data = response.get_data()
         api_response = json.loads(data)
-        self.assertEqual({"selection":{
-                                        "title":"Fire","author":"Anto","id":2}, 
-                                        "message":"successfuly got book requested"
-                                        }, 
-                                        api_response)
+        self.assertEqual({"data":{"title":"Fire","author":"Anto","id":2}, 
+                                "message":"successfuly got book requested"
+                                }, 
+                                api_response)
 
-    def test_empty_bookId_input(self):
-        user_data = None
-        response = self.postman.get("/api/v1/books/")
-        self.assertEqual(200, response.status_code)
-        self.assertEqual({"message":"here are all the books stocked"}, response)
 
-class PutGetTestCase(unittest.TestCase):
+class BooksPutTestCase(unittest.TestCase):
     def setUp(self):
         self.app = create_app('testing')
 
@@ -152,7 +146,7 @@ class PutGetTestCase(unittest.TestCase):
         books.clear()
 
     def test_put_bookId_zero(self):
-        response = self.postman.get("/api/v1/books/0")
+        response = self.postman.put("/api/v1/books/0")
         self.assertEqual(400, response.status_code)
 
         data = response.get_data()
@@ -163,7 +157,7 @@ class PutGetTestCase(unittest.TestCase):
         user_data = {"title":"Art of War"}
         user_data_json = json.dumps(user_data)
 
-        response = self.postman.post("/api/v1/books/1", data=user_data_json, content_type="application/json")
+        response = self.postman.put("/api/v1/books/1", data=user_data_json, content_type="application/json")
         self.assertEqual(400, response.status_code)
         
         data = response.get_data()
@@ -174,10 +168,40 @@ class PutGetTestCase(unittest.TestCase):
         user_data = {"author":"Sun Tzu"}
         user_data_json = json.dumps(user_data)
 
-        response = self.postman.post("/api/v1/books/1", data=user_data_json, content_type="application/json")
+        response = self.postman.put("/api/v1/books/1", data=user_data_json, content_type="application/json")
         self.assertEqual(400, response.status_code)
 
         data = response.get_data()
         api_response = json.loads(data)
         self.assertEqual({"message":"error, book must have a title"}, api_response)
     
+class BooksDeleteTestCase(unittest.TestCase):
+    def setUp(self):
+        self.app = create_app('testing')
+
+        self.app_context = self.app.app_context()
+        self.app_context.push()
+        self.postman = self.app.test_client()
+    
+    def tearDown(self):
+        self.app_context.pop()
+        books.clear()
+
+    def test_delete_zero_bookId(self):
+        response = self.postman.delete("/api/v1/books/0")
+        self.assertEqual(400, response.status_code)
+
+        data = response.get_data()
+        api_response = json.loads(data)
+        self.assertEqual({"message":"error, book id cannot be zero"}, api_response)
+
+    def test_delete_normal_bookId(self):
+        book = Book("Fire","Anto", 2)
+        books[book.title] = book
+
+        response = self.postman.delete("/api/v1/books/2")
+        self.assertEqual(200, response.status_code)
+
+        data = response.get_data()
+        api_response = json.loads(data)
+        self.assertEqual({"message":"successfully deleted book"}, api_response)
