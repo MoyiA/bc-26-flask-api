@@ -44,9 +44,6 @@ class Books(Resource):
 
         return {"data" : response, "message": "new book successfully created"}, 201
     
-    def put(self, id):
-        pass
-
     def get(self,bookId):
         if bookId == 0:
             return {"message":"error, book id cannot be zero"}, 400
@@ -58,7 +55,31 @@ class Books(Resource):
                 response["title"] = book.title
                 response["author"] = book.author 
 
-                return {"selection": response, "message":"successfuly got book requested"}
+                return {"selection": response, "message":"successfuly got book requested"}, 200
 
-  
+    def put(self, bookId):
+        if bookId == 0:
+            return {"message":"error, book id cannot be zero"}, 400
+
+        for book in books.values():
+            user_input = request.get_json()
+
+            # validating inputed data
+            if not "author" in user_input:
+                return {"message":"error, book must have an author"}, 400
+            if not "title" in user_input:
+                return {"message":"error, book must have a title"}, 400
+
+            if book.id == bookId:
+                book.title = user_input["title"]
+                book.author = user_input["author"]
+
+                updated_book = {}
+                updated_book["id"] = book.id
+                updated_book["title"] = book.title
+                updated_book["author"] = book.author
+
+                return {"data":updated_book, "message":"book has been updated"}, 200
+
+
         

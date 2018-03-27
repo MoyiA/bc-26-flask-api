@@ -28,7 +28,7 @@ class BooksPostTestCase(unittest.TestCase):
 
     def test_emtpty_title_input(self):
         user_data = {"author":"Sun Tzu"}
-        user_data_json = json.dumps(user_data) #turnuser_data into json data
+        user_data_json = json.dumps(user_data)
 
         response = self.postman.post("/api/v1/books", data=user_data_json, content_type="application/json")
         self.assertEqual(400, response.status_code)
@@ -102,15 +102,14 @@ class BooksGetTestCase(unittest.TestCase):
     def setUp(self):
         self.app = create_app('testing')
 
-        self.app_context = self.app.app_context() #create environment to handle our request
+        self.app_context = self.app.app_context()
         self.app_context.push()
-        self.postman = self.app.test_client() #used to send request to app(GET,POST,PUT,DELETE)
+        self.postman = self.app.test_client()
     
     def tearDown(self):
         self.app_context.pop()
         books.clear()
    
-
     def test_zero_bookId(self):
         response = self.postman.get("/api/v1/books/0")
         self.assertEqual(400, response.status_code)
@@ -130,7 +129,8 @@ class BooksGetTestCase(unittest.TestCase):
         api_response = json.loads(data)
         self.assertEqual({"selection":{
                                         "title":"Fire","author":"Anto","id":2}, 
-                                        "message":"successfuly got book requested"}, 
+                                        "message":"successfuly got book requested"
+                                        }, 
                                         api_response)
 
     def test_empty_bookId_input(self):
@@ -138,4 +138,46 @@ class BooksGetTestCase(unittest.TestCase):
         response = self.postman.get("/api/v1/books/")
         self.assertEqual(200, response.status_code)
         self.assertEqual({"message":"here are all the books stocked"}, response)
+
+class PutGetTestCase(unittest.TestCase):
+    def setUp(self):
+        self.app = create_app('testing')
+
+        self.app_context = self.app.app_context()
+        self.app_context.push()
+        self.postman = self.app.test_client()
+    
+    def tearDown(self):
+        self.app_context.pop()
+        books.clear()
+
+    def test_put_bookId_zero(self):
+        response = self.postman.get("/api/v1/books/0")
+        self.assertEqual(400, response.status_code)
+
+        data = response.get_data()
+        api_response = json.loads(data)
+        self.assertEqual({"message":"error, book id cannot be zero"}, api_response)
+
+    def test_put_empty_author_input(self):
+        user_data = {"title":"Art of War"}
+        user_data_json = json.dumps(user_data)
+
+        response = self.postman.post("/api/v1/books/1", data=user_data_json, content_type="application/json")
+        self.assertEqual(400, response.status_code)
         
+        data = response.get_data()
+        api_response = json.loads(data)
+        self.assertEqual({"message":"error, book must have an author"}, api_response)
+
+    def test_put_empty_title(self):
+        user_data = {"author":"Sun Tzu"}
+        user_data_json = json.dumps(user_data)
+
+        response = self.postman.post("/api/v1/books/1", data=user_data_json, content_type="application/json")
+        self.assertEqual(400, response.status_code)
+
+        data = response.get_data()
+        api_response = json.loads(data)
+        self.assertEqual({"message":"error, book must have a title"}, api_response)
+    
