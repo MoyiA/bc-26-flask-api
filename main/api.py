@@ -44,10 +44,7 @@ class Books(Resource):
 
         return {"data" : response, "message": "new book successfully created"}, 201
     
-    def get(self,bookId):
-        if bookId == 0:
-            return {"message":"error, book id cannot be zero"}, 400
-
+    def get(self,bookId = None):       
         for book in books.values():
             if book.id == bookId:
                 response = {}
@@ -55,21 +52,21 @@ class Books(Resource):
                 response["title"] = book.title
                 response["author"] = book.author 
 
-                return {"selection": response, "message":"successfuly got book requested"}, 200
+                return {"data": response, "message":"successfuly got book requested"}, 200
+        return {"message":"not found"}, 404
 
     def put(self, bookId):
         if bookId == 0:
             return {"message":"error, book id cannot be zero"}, 400
 
-        for book in books.values():
-            user_input = request.get_json()
+        user_input = request.get_json()
+         # validating inputed data
+        if not "author" in user_input:
+            return {"message":"error, book must have an author"}, 400
+        if not "title" in user_input:
+            return {"message":"error, book must have a title"}, 400
 
-            # validating inputed data
-            if not "author" in user_input:
-                return {"message":"error, book must have an author"}, 400
-            if not "title" in user_input:
-                return {"message":"error, book must have a title"}, 400
-
+        for book in books.values():        
             if book.id == bookId:
                 book.title = user_input["title"]
                 book.author = user_input["author"]
@@ -80,6 +77,17 @@ class Books(Resource):
                 updated_book["author"] = book.author
 
                 return {"data":updated_book, "message":"book has been updated"}, 200
+        return {"message":"not found"}, 404
 
+    def delete(self, bookId):
+        if bookId <= 0:
+            return {"message":"error, book id cannot be zero"}, 400
 
-        
+        for book in books.values():
+            if book.id == bookId:
+                books.pop(book.title)
+
+                return {"message":"successfully deleted book"}, 200
+        return {"message":"not found"}, 404
+                
+            
