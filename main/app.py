@@ -27,7 +27,8 @@ def create_app(config_name):
     #add url resources
     api.add_resource(Books, 
             "/api/v1/books",
-            "/api/v1/books/<int:bookId>")
+            "/api/v1/books/<int:bookId>"
+            )
      
     # add error handling
     @app.errorhandler(404)
